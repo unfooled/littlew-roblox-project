@@ -77,17 +77,19 @@ def open_people_tab():
     pydirectinput.keyDown("escape")
     time.sleep(0.15)
     pydirectinput.keyUp("escape")
-    time.sleep(3)
+    time.sleep(3.5)
+    # Check if ESC menu opened by looking for People tab
     screen = pyautogui.screenshot()
     data = pytesseract.image_to_data(screen, output_type=pytesseract.Output.DICT)
     for i, word in enumerate(data["text"]):
         if "People" in word:
             x = data["left"][i] + data["width"][i] // 2
             y = data["top"][i] + data["height"][i] // 2
+            print(f"  Found People tab, clicking...")
             pyautogui.click(x, y)
-            time.sleep(1.5)
+            time.sleep(2)
             return True
-    print("  Could not find People tab")
+    print("  ESC menu did not open or People tab not found")
     return False
 
 def is_valid_username(u):
@@ -118,8 +120,13 @@ def extract_usernames(text):
 
 def scroll_down_in_menu():
     screen_width, screen_height = pyautogui.size()
-    pyautogui.scroll(-3, x=screen_width // 2, y=screen_height // 2)
-    time.sleep(1)
+    # Scroll on the right portion where the people list is
+    list_x = int(screen_width * 0.5)
+    list_y = int(screen_height * 0.6)
+    pyautogui.moveTo(list_x, list_y)
+    time.sleep(0.3)
+    pyautogui.scroll(-5)
+    time.sleep(1.2)
 
 def get_user_id(username):
     try:
@@ -203,14 +210,19 @@ def process_server(server_id):
 
     opened = open_people_tab()
     if not opened:
-        print("  Retrying ESC menu...")
+        print("  Retrying - clicking People tab again...")
         time.sleep(2)
-        focus_roblox()
-        pydirectinput.keyDown("escape")
-        time.sleep(0.15)
-        pydirectinput.keyUp("escape")
-        time.sleep(2)
-        opened = open_people_tab()
+        # Don't press ESC again! Just try to find and click People tab
+        screen = pyautogui.screenshot()
+        data = pytesseract.image_to_data(screen, output_type=pytesseract.Output.DICT)
+        for i, word in enumerate(data["text"]):
+            if "People" in word:
+                x = data["left"][i] + data["width"][i] // 2
+                y = data["top"][i] + data["height"][i] // 2
+                pyautogui.click(x, y)
+                time.sleep(2)
+                opened = True
+                break
 
     all_usernames = set()
     scroll_attempts = 0
