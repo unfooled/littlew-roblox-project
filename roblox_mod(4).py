@@ -10,10 +10,14 @@ import os
 
 IS_WINDOWS = sys.platform == "win32"
 
+# ─── Tesseract path (Windows) ─────────────────────────────────────────────────
+if IS_WINDOWS:
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 PLACE_ID = input("Enter your Roblox Place ID: ").strip()
 DISCORD_WEBHOOK = input("Enter your Discord Webhook URL: ").strip()
-GAME_LOAD_WAIT = 20
+GAME_LOAD_WAIT = 25  # slightly longer on Windows
 
 BODYSUIT_KEYWORDS = [
     "bodysuit", "body suit", "catsuit", "latex suit",
@@ -21,8 +25,33 @@ BODYSUIT_KEYWORDS = [
 ]
 
 visited_servers = set()
-globally_checked_users = set()  # never recheck same user across servers
+globally_checked_users = set()
 # ──────────────────────────────────────────────────────────────────────────────
+
+def focus_roblox():
+    """Bring Roblox window to front on Windows"""
+    if not IS_WINDOWS:
+        return
+    try:
+        import ctypes
+        EnumWindows = ctypes.windll.user32.EnumWindows
+        GetWindowText = ctypes.windll.user32.GetWindowTextW
+        SetForegroundWindow = ctypes.windll.user32.SetForegroundWindow
+        IsWindowVisible = ctypes.windll.user32.IsWindowVisible
+
+        def callback(hwnd, _):
+            if IsWindowVisible(hwnd):
+                buf = ctypes.create_unicode_buffer(256)
+                GetWindowText(hwnd, buf, 256)
+                if "Roblox" in buf.value:
+                    SetForegroundWindow(hwnd)
+            return True
+
+        WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_int, ctypes.c_int)
+        EnumWindows(WNDENUMPROC(callback), 0)
+        time.sleep(1)
+    except Exception as e:
+        print(f"  Could not focus Roblox window: {e}")
 
 def get_servers():
     url = f"https://games.roblox.com/v1/games/{PLACE_ID}/servers/Public?limit=100&sortOrder=Desc"
@@ -45,9 +74,14 @@ def join_server(server_id):
     time.sleep(GAME_LOAD_WAIT)
 
 def open_people_tab():
+    print("  Focusing Roblox window...")
+    focus_roblox()
+    time.sleep(1)
     print("  Opening ESC menu...")
+    pyautogui.click(pyautogui.size()[0] // 2, pyautogui.size()[1] // 2)  # click center to make sure game is focused
+    time.sleep(0.5)
     pyautogui.press("escape")
-    time.sleep(2)
+    time.sleep(2.5)
     screen = pyautogui.screenshot()
     data = pytesseract.image_to_data(screen, output_type=pytesseract.Output.DICT)
     for i, word in enumerate(data["text"]):
@@ -71,8 +105,7 @@ def is_valid_username(u):
     }
     if u.lower() in garbage:
         return False
-    # Filter things that are clearly not usernames (short random letters, server IDs etc)
-    if re.match(r'^[0-9a-f]{6,}$', u.lower()):  # hex-like strings
+    if re.match(r'^[0-9a-f]{6,}$', u.lower()):
         return False
     return True
 
@@ -164,6 +197,7 @@ def leave_game():
     print("  Leaving game...")
     if IS_WINDOWS:
         subprocess.run(["taskkill", "/F", "/IM", "RobloxPlayerBeta.exe"], capture_output=True)
+        subprocess.run(["taskkill", "/F", "/IM", "RobloxPlayer.exe"], capture_output=True)
     else:
         subprocess.run(["pkill", "-x", "RobloxPlayer"])
     time.sleep(3)
@@ -173,9 +207,12 @@ def process_server(server_id):
 
     opened = open_people_tab()
     if not opened:
+        print("  Retrying ESC menu...")
+        time.sleep(2)
+        focus_roblox()
         pyautogui.press("escape")
-        time.sleep(1)
-        open_people_tab()
+        time.sleep(2)
+        opened = open_people_tab()
 
     all_usernames = set()
     scroll_attempts = 0
@@ -198,7 +235,7 @@ def process_server(server_id):
 
     for username in all_usernames:
         if username.lower() in globally_checked_users:
-            print(f"  Skipping @{username} (already checked before)")
+            print(f"  Skipping @{username} (already checked)")
             continue
 
         print(f"  Checking @{username}...")
