@@ -33,23 +33,16 @@ def focus_roblox():
     if not IS_WINDOWS:
         return
     try:
-        import ctypes
-        EnumWindows = ctypes.windll.user32.EnumWindows
-        GetWindowText = ctypes.windll.user32.GetWindowTextW
-        SetForegroundWindow = ctypes.windll.user32.SetForegroundWindow
-        IsWindowVisible = ctypes.windll.user32.IsWindowVisible
-
-        def callback(hwnd, _):
-            if IsWindowVisible(hwnd):
-                buf = ctypes.create_unicode_buffer(256)
-                GetWindowText(hwnd, buf, 256)
-                if "Roblox" in buf.value:
-                    SetForegroundWindow(hwnd)
-            return True
-
-        WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_int, ctypes.c_int)
-        EnumWindows(WNDENUMPROC(callback), 0)
-        time.sleep(1)
+        import pygetwindow as gw
+        windows = gw.getWindowsWithTitle("Roblox")
+        if windows:
+            win = windows[0]
+            win.restore()
+            win.activate()
+            time.sleep(1.5)
+            print("  Roblox window focused!")
+        else:
+            print("  Could not find Roblox window - is the game open?")
     except Exception as e:
         print(f"  Could not focus Roblox window: {e}")
 
@@ -78,10 +71,12 @@ def open_people_tab():
     focus_roblox()
     time.sleep(1)
     print("  Opening ESC menu...")
-    pyautogui.click(pyautogui.size()[0] // 2, pyautogui.size()[1] // 2)  # click center to make sure game is focused
-    time.sleep(0.5)
-    pyautogui.press("escape")
-    time.sleep(2.5)
+    pyautogui.click(pyautogui.size()[0] // 2, pyautogui.size()[1] // 2)
+    time.sleep(1)
+    pyautogui.keyDown("escape")
+    time.sleep(0.15)
+    pyautogui.keyUp("escape")
+    time.sleep(3)
     screen = pyautogui.screenshot()
     data = pytesseract.image_to_data(screen, output_type=pytesseract.Output.DICT)
     for i, word in enumerate(data["text"]):
@@ -280,8 +275,12 @@ while True:
             found_new = True
             visited_servers.add(sid)
             playing = server.get("playing", 0)
+            max_players = server.get("maxPlayers", 12)
             if playing == 0:
                 print(f"  Skipping empty server {sid}")
+                continue
+            if playing >= max_players:
+                print(f"  Skipping full server {sid} ({playing}/{max_players})")
                 continue
             print(f"\n📡 Server {sid} — {playing} players")
             try:
