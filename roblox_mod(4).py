@@ -17,8 +17,8 @@ if IS_WINDOWS:
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-PLACE_ID = input("Enter your Roblox Place ID: ").strip()
-DISCORD_WEBHOOK = input("Enter your Discord Webhook URL: ").strip()
+PLACE_ID = "14662419251"
+DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1475225559318663200/4XO4gkXZZsU85F249qWvLHB-_w1jnzWfeSICRsKdT4VCnKBAp0vQXsf3upGCjl62_MSZ"
 GAME_LOAD_WAIT = 25  # slightly longer on Windows
 
 BODYSUIT_KEYWORDS = [
@@ -213,9 +213,14 @@ def leave_game():
     if IS_WINDOWS:
         subprocess.run(["taskkill", "/F", "/IM", "RobloxPlayerBeta.exe"], capture_output=True)
         subprocess.run(["taskkill", "/F", "/IM", "RobloxPlayer.exe"], capture_output=True)
+        time.sleep(3)
+        # Flush any stray keypresses from the keyboard buffer
+        import msvcrt
+        while msvcrt.kbhit():
+            msvcrt.getch()
     else:
         subprocess.run(["pkill", "-x", "RobloxPlayer"])
-    time.sleep(3)
+        time.sleep(3)
 
 def process_server(server_id):
     join_server(server_id)
