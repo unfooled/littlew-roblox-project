@@ -213,14 +213,9 @@ def leave_game():
     if IS_WINDOWS:
         subprocess.run(["taskkill", "/F", "/IM", "RobloxPlayerBeta.exe"], capture_output=True)
         subprocess.run(["taskkill", "/F", "/IM", "RobloxPlayer.exe"], capture_output=True)
-        time.sleep(3)
-        # Flush any stray keypresses from the keyboard buffer
-        import msvcrt
-        while msvcrt.kbhit():
-            msvcrt.getch()
     else:
         subprocess.run(["pkill", "-x", "RobloxPlayer"])
-        time.sleep(3)
+    time.sleep(3)
 
 def process_server(server_id):
     join_server(server_id)
