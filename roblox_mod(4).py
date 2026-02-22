@@ -2,6 +2,7 @@ import subprocess
 import time
 import pyautogui
 import pydirectinput
+pydirectinput.PAUSE = 0
 import pytesseract
 from PIL import Image, ImageEnhance
 import requests
@@ -70,10 +71,14 @@ def join_server(server_id):
 def open_people_tab():
     print("  Focusing Roblox window...")
     focus_roblox()
-    time.sleep(1)
+    time.sleep(1.5)
     print("  Opening ESC menu...")
-    pyautogui.click(pyautogui.size()[0] // 2, pyautogui.size()[1] // 2)
-    time.sleep(1)
+    # Move mouse to center of screen and click game to ensure focus
+    cx, cy = pyautogui.size()[0] // 2, pyautogui.size()[1] // 2
+    pyautogui.moveTo(cx, cy)
+    time.sleep(0.3)
+    pyautogui.click(cx, cy)
+    time.sleep(1.5)
     pydirectinput.keyDown("escape")
     time.sleep(0.15)
     pydirectinput.keyUp("escape")
@@ -120,12 +125,19 @@ def extract_usernames(text):
 
 def scroll_down_in_menu():
     screen_width, screen_height = pyautogui.size()
-    # Scroll on the right portion where the people list is
     list_x = int(screen_width * 0.5)
     list_y = int(screen_height * 0.6)
     pyautogui.moveTo(list_x, list_y)
     time.sleep(0.3)
-    pyautogui.scroll(-5)
+    if IS_WINDOWS:
+        import ctypes
+        # Send scroll wheel directly via ctypes - much more reliable in games
+        MOUSEEVENTF_WHEEL = 0x0800
+        ctypes.windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, -120 * 3, 0)
+        time.sleep(0.1)
+        ctypes.windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, -120 * 3, 0)
+    else:
+        pyautogui.scroll(-5)
     time.sleep(1.2)
 
 def get_user_id(username):
