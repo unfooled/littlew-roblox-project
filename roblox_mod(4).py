@@ -1,6 +1,7 @@
 import subprocess
 import time
 import pyautogui
+import pydirectinput
 import pytesseract
 from PIL import Image, ImageEnhance
 import requests
@@ -73,9 +74,9 @@ def open_people_tab():
     print("  Opening ESC menu...")
     pyautogui.click(pyautogui.size()[0] // 2, pyautogui.size()[1] // 2)
     time.sleep(1)
-    pyautogui.keyDown("escape")
+    pydirectinput.keyDown("escape")
     time.sleep(0.15)
-    pyautogui.keyUp("escape")
+    pydirectinput.keyUp("escape")
     time.sleep(3)
     screen = pyautogui.screenshot()
     data = pytesseract.image_to_data(screen, output_type=pytesseract.Output.DICT)
@@ -205,7 +206,9 @@ def process_server(server_id):
         print("  Retrying ESC menu...")
         time.sleep(2)
         focus_roblox()
-        pyautogui.press("escape")
+        pydirectinput.keyDown("escape")
+        time.sleep(0.15)
+        pydirectinput.keyUp("escape")
         time.sleep(2)
         opened = open_people_tab()
 
