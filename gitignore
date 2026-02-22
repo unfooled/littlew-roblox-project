@@ -1,0 +1,14 @@
+# Training images - do not upload your labeled avatars
+training/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# Environment files
+.env
+*.env
