@@ -1,0 +1,5 @@
+# roblox-auto-mod config
+# The cookie expires periodically — update it here when you get a new one
+PLACE_ID=
+DISCORD_WEBHOOK=
+COOKIE=
