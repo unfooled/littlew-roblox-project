@@ -1,4 +1,4 @@
-# RoSentinel
+# Roblox-auto-mod
 
 An AI-powered Roblox avatar moderation tool that scans public servers for inappropriate outfits and reports them to a Discord channel.
 
@@ -6,7 +6,7 @@ An AI-powered Roblox avatar moderation tool that scans public servers for inappr
 
 ## How it works
 
-RoSentinel scans all public servers in your Roblox game, fetches full-body avatar thumbnails for each player, and runs them through a local AI vision model (Moondream) to detect inappropriate outfits such as bodysuits, latex suits, and lingerie. Flagged avatars are sent to a Discord webhook with a direct server join link.
+Roblox-auto-mod scans all public servers in your Roblox game, fetches full-body avatar thumbnails for each player, and runs them through a local AI vision model (Moondream) to detect inappropriate outfits such as bodysuits, latex suits, and lingerie. Flagged avatars are sent to a Discord webhook with a direct server join link.
 
 The tool has two modes:
 
