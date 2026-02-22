@@ -20,13 +20,59 @@ CLEAN_DIR   = Path("training/clean")
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  SETUP
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PLACE_ID        = input("Roblox Place ID: ").strip()
-DISCORD_WEBHOOK = input("Discord Webhook URL: ").strip()
+CONFIG_FILE = Path("config.txt")
 
-COOKIE = input("Roblox .ROBLOSECURITY cookie: ").strip()
-if "|_" in COOKIE:
-    COOKIE = COOKIE.split("|_")[-1]
-COOKIE = COOKIE.strip()
+def load_config():
+    config = {}
+    if CONFIG_FILE.exists():
+        for line in CONFIG_FILE.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            config[key.strip()] = value.strip()
+    return config
+
+def save_config(place_id, webhook, cookie):
+    CONFIG_FILE.write_text(
+        f"# roblox-auto-mod config\n"
+        f"# The cookie expires periodically — update it here when you get a new one\n"
+        f"PLACE_ID={place_id}\n"
+        f"DISCORD_WEBHOOK={webhook}\n"
+        f"COOKIE={cookie}\n"
+    )
+    print("  Saved to config.txt for next time.\n")
+
+config = load_config()
+
+if config.get("PLACE_ID") and config.get("DISCORD_WEBHOOK") and config.get("COOKIE"):
+    print(f"\nFound saved config:")
+    print(f"  Place ID : {config['PLACE_ID']}")
+    print(f"  Webhook  : {config['DISCORD_WEBHOOK'][:40]}...")
+    print(f"  Cookie   : ...{config['COOKIE'][-10:]}")
+    use_saved = input("\nUse saved config? [y]es / [n]o (enter new): ").strip().lower()
+    if use_saved == "y":
+        PLACE_ID        = config["PLACE_ID"]
+        DISCORD_WEBHOOK = config["DISCORD_WEBHOOK"]
+        COOKIE          = config["COOKIE"]
+        print()
+    else:
+        PLACE_ID        = input("Roblox Place ID: ").strip()
+        DISCORD_WEBHOOK = input("Discord Webhook URL: ").strip()
+        COOKIE          = input("Roblox .ROBLOSECURITY cookie: ").strip()
+        if "|_" in COOKIE:
+            COOKIE = COOKIE.split("|_")[-1]
+        COOKIE = COOKIE.strip()
+        save_config(PLACE_ID, DISCORD_WEBHOOK, COOKIE)
+else:
+    print("\nNo saved config found. Enter your details below:\n")
+    PLACE_ID        = input("Roblox Place ID: ").strip()
+    DISCORD_WEBHOOK = input("Discord Webhook URL: ").strip()
+    COOKIE          = input("Roblox .ROBLOSECURITY cookie: ").strip()
+    if "|_" in COOKIE:
+        COOKIE = COOKIE.split("|_")[-1]
+    COOKIE = COOKIE.strip()
+    save_config(PLACE_ID, DISCORD_WEBHOOK, COOKIE)
 
 SESSION = requests.Session()
 SESSION.cookies.set(".ROBLOSECURITY", COOKIE, domain=".roblox.com")
