@@ -134,7 +134,9 @@ FLAG as inappropriate if you see:
 - Lingerie or underwear as the full outfit
 - Any clothing with sexual imagery printed on it
 
-DO NOT flag normal clothes, armour, animal costumes, sports outfits, or plain dark outfits.
+DO NOT flag normal clothes, armour, animal costumes, sports outfits, plain dark outfits,
+or feminine clothing on any avatar (skirts, crop tops, thigh highs, feminine tops) unless
+they also match one of the FLAG criteria above.
 
 Reply with ONLY this JSON, nothing else:
 {"flagged": true, "reason": "one sentence description"}
