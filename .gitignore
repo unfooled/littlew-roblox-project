@@ -1,6 +1,12 @@
 # Training images - do not upload your labeled avatars
 training/
 
+# AI knowledge base - generated locally, stays on your machine
+knowledge.txt
+
+# Saved credentials - never upload this
+config.txt
+
 # Python cache
 __pycache__/
 *.pyc
