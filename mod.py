@@ -136,22 +136,42 @@ def count_examples() -> tuple[int, int]:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  AI CHECK
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PROMPT = """You are a Roblox game moderator checking if an avatar is wearing inappropriate clothing.
+def load_knowledge() -> str:
+    knowledge_file = Path("knowledge.txt")
+    if knowledge_file.exists():
+        content = knowledge_file.read_text().strip()
+        # Strip comment lines
+        lines = [l for l in content.splitlines() if not l.startswith("#")]
+        return "\n".join(lines).strip()
+    return ""
 
+KNOWLEDGE = load_knowledge()
+if KNOWLEDGE:
+    print("Knowledge base loaded.")
+else:
+    print("No knowledge.txt found. Run setup_knowledge.py for better accuracy.")
+
+PROMPT = f"""You are a Roblox game moderator checking if an avatar is wearing inappropriate clothing.
+The game is a social hangout rated Ages 13+.
+
+{f"Use this knowledge about Roblox avatars and moderation to guide your judgment:{chr(10)}{KNOWLEDGE}{chr(10)}" if KNOWLEDGE else ""}
 FLAG as inappropriate if you see:
 - A skin-colored texture covering the whole body with no real clothing (looks naked)
 - A shiny/latex/rubber suit showing every body curve
 - Lingerie or underwear as the full outfit
+- A revealing harness or strappy top exposing most of the chest
+- Skin-colored bodysuit with thigh high socks
 - Any clothing with sexual imagery printed on it
 
 DO NOT flag normal clothes, armour, animal costumes, sports outfits, plain dark outfits,
 or feminine clothing on any avatar (skirts, crop tops, thigh highs, feminine tops) unless
 they also match one of the FLAG criteria above.
+Avatars with no clothes but a solid non-skin body color are completely normal — do NOT flag.
 
 Reply with ONLY this JSON, nothing else:
-{"flagged": true, "reason": "one sentence description"}
+{{"flagged": true, "reason": "one sentence description"}}
 or
-{"flagged": false, "reason": null}"""
+{{"flagged": false, "reason": null}}"""
 
 def ai_check_avatar(img_b64: str) -> tuple[bool, str | None]:
     raw = ""
